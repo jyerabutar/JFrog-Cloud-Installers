@@ -167,6 +167,14 @@ cat <<EOF >/opt/jfrog/artifactory/var/etc/security/master.key
 ${MASTER_KEY}
 EOF
 
+# Create join.key only on primary node and save it to the bootstrap directory
+# https://www.jfrog.com/confluence/display/JFROG/Managing+Keys
+if [ "${IS_PRIMARY}" = "true" ]; then
+cat <<EOF >/opt/jfrog/artifactory/var/bootstrap/etc/access/keys/join.key
+${JOIN_KEY}
+EOF
+fi
+
 # Azure Blob Storage configuration
 # https://www.jfrog.com/confluence/display/JFROG/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider
 mkdir -p /var/opt/jfrog/artifactory/etc/artifactory/
