@@ -140,6 +140,9 @@ fi
 EXTRA_JAVA_OPTS=$(cat /var/lib/cloud/instance/user-data.txt | grep "^EXTRA_JAVA_OPTS=" | sed "s/EXTRA_JAVA_OPTS=//")
 sed -i -e "s/#extraJavaOpts: \"-Xms512m -Xmx2g\"/extraJavaOpts: ${EXTRA_JAVA_OPTS}/" /var/opt/jfrog/artifactory/etc/system.yaml
 
+# Add join.key to system.yaml for each node
+sed -i -e "s/#joinKey: .*/joinKey: \"${JOIN_KEY}\"/" /var/opt/jfrog/artifactory/etc/system.yaml
+
 # Node settings
 HOSTNAME=$(hostname -i)
 sed -i -e "s/#id: \"art1\"/id: \"${NODE_NAME}\"/" /var/opt/jfrog/artifactory/etc/system.yaml
@@ -166,14 +169,6 @@ mkdir -p /opt/jfrog/artifactory/var/etc/security/
 cat <<EOF >/opt/jfrog/artifactory/var/etc/security/master.key
 ${MASTER_KEY}
 EOF
-
-# Create join.key only on primary node and save it to the bootstrap directory
-# https://www.jfrog.com/confluence/display/JFROG/Managing+Keys
-if [ "${IS_PRIMARY}" = "true" ]; then
-cat <<EOF >/opt/jfrog/artifactory/var/bootstrap/etc/access/keys/join.key
-${JOIN_KEY}
-EOF
-fi
 
 # Azure Blob Storage configuration
 # https://www.jfrog.com/confluence/display/JFROG/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider
