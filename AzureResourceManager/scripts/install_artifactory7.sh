@@ -8,14 +8,12 @@ STORAGE_CONTAINER=$(cat /var/lib/cloud/instance/user-data.txt | grep "^STO_CTR_N
 STORAGE_ACCT_KEY=$(cat /var/lib/cloud/instance/user-data.txt | grep "^STO_ACT_KEY=" | sed "s/STO_ACT_KEY=//")
 ARTIFACTORY_VERSION=$(cat /var/lib/cloud/instance/user-data.txt | grep "^ARTIFACTORY_VERSION=" | sed "s/ARTIFACTORY_VERSION=//")
 MASTER_KEY=$(cat /var/lib/cloud/instance/user-data.txt | grep "^MASTER_KEY=" | sed "s/MASTER_KEY=//")
-JOIN_KEY=$(cat /var/lib/cloud/instance/user-data.txt | grep "^JOIN_KEY=" | sed "s/JOIN_KEY=//")
 IS_PRIMARY=$(cat /var/lib/cloud/instance/user-data.txt | grep "^IS_PRIMARY=" | sed "s/IS_PRIMARY=//")
 ARTIFACTORY_LICENSE_1=$(cat /var/lib/cloud/instance/user-data.txt | grep "^LICENSE1=" | sed "s/LICENSE1=//")
 ARTIFACTORY_LICENSE_2=$(cat /var/lib/cloud/instance/user-data.txt | grep "^LICENSE2=" | sed "s/LICENSE2=//")
 ARTIFACTORY_LICENSE_3=$(cat /var/lib/cloud/instance/user-data.txt | grep "^LICENSE3=" | sed "s/LICENSE3=//")
 ARTIFACTORY_LICENSE_4=$(cat /var/lib/cloud/instance/user-data.txt | grep "^LICENSE4=" | sed "s/LICENSE4=//")
 ARTIFACTORY_LICENSE_5=$(cat /var/lib/cloud/instance/user-data.txt | grep "^LICENSE5=" | sed "s/LICENSE5=//")
-#JOIN_KEY_GENERATED=$(openssl rand -hex 16)
 export DEBIAN_FRONTEND=noninteractive
 
 #Generate Self-Signed Cert
@@ -140,9 +138,6 @@ fi
 EXTRA_JAVA_OPTS=$(cat /var/lib/cloud/instance/user-data.txt | grep "^EXTRA_JAVA_OPTS=" | sed "s/EXTRA_JAVA_OPTS=//")
 sed -i -e "s/#extraJavaOpts: \"-Xms512m -Xmx2g\"/extraJavaOpts: ${EXTRA_JAVA_OPTS}/" /var/opt/jfrog/artifactory/etc/system.yaml
 
-# Add join.key to system.yaml for each node
-sed -i -e "s/#joinKey: .*/joinKey: \"${JOIN_KEY}\"/" /var/opt/jfrog/artifactory/etc/system.yaml
-
 # Node settings
 HOSTNAME=$(hostname -i)
 sed -i -e "s/#id: \"art1\"/id: \"${NODE_NAME}\"/" /var/opt/jfrog/artifactory/etc/system.yaml
@@ -165,16 +160,9 @@ EOF
 
 # Create master.key on each node
 mkdir -p /opt/jfrog/artifactory/var/etc/security/
-cat <<EOF >/opt/jfrog/artifactory/var/etc/security/master.key
+cat <<EOF >/opt/jfrog/artifactory/var/bootstrap/access/etc/security/master.key
 ${MASTER_KEY}
 EOF
-
-# Create join.key on each node and save it to the bootstrap directory
-# https://www.jfrog.com/confluence/display/JFROG/Managing+Keys
-cat <<EOF >/opt/jfrog/artifactory/var/bootstrap/access/etc/security/join.key
-${JOIN_KEY}
-EOF
-
 
 # Azure Blob Storage configuration
 # https://www.jfrog.com/confluence/display/JFROG/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider
