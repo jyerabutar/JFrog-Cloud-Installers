@@ -192,8 +192,10 @@ chown artifactory:artifactory -R /var/opt/jfrog/artifactory/*  && chown artifact
 
 # start Artifactory
 sleep $((RANDOM % 120))
-service artifactory start
-service nginx start
+systemctl start artifactory
+systemctl start nginx
+#service artifactory start
+#service nginx start
 nginx -s reload
 echo "INFO: Artifactory HA installation completed."
 echo ""
