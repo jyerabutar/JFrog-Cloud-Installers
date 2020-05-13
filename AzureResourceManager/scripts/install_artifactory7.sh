@@ -159,7 +159,8 @@ cat <<EOF >>/var/opt/jfrog/artifactory/etc/system.yaml
 EOF
 
 # Create master.key on each node
-cat <<EOF >/opt/jfrog/artifactory/var/bootstrap/etc/access/keys/master.key
+mkdir -p /opt/jfrog/artifactory/var/etc/security/
+cat <<EOF >/opt/jfrog/artifactory/var/etc/security/master.key
 ${MASTER_KEY}
 EOF
 
